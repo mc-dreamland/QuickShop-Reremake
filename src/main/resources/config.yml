@@ -848,3 +848,10 @@ config-damaged: false
 
 
 
+
+#The list of nbt that are blocked from being sold.
+#This will not affect existing shops!
+blacklist-nbt:
+  # - '<key>'
+  # - '<compound>' support compound like: key.key1.key2
+  - 'custom.test'

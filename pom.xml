@@ -437,6 +437,15 @@
             <id>minebench-repo</id>
             <url>https://repo.minebench.de/</url>
         </repository>
+        <repository>
+            <id>redempt.dev</id>
+            <url>https://redempt.dev</url>
+        </repository>
+        <repository>
+            <id>nexus</id>
+            <name>releases</name>
+            <url>http://lnexus.bjd-mc.com:8081/repository/maven-public/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -893,6 +902,12 @@
             <groupId>net.tnemc</groupId>
             <artifactId>Reserve</artifactId>
             <version>0.1.5.4</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.Redempt</groupId>
+            <artifactId>RedLib</artifactId>
+            <version>6.5.8</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

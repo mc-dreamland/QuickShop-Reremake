@@ -188,23 +188,6 @@ public final class EnvironmentChecker {
         JarFile jarFile = null;
         try {
             ClassLoader loader = this.getClass().getClassLoader();
-            try (InputStream stream1 = loader.getResourceAsStream("META-INF/MANIFEST.MF");
-                 InputStream stream2 = loader.getResourceAsStream("META-INF/SELFSIGN.DSA");
-                 InputStream stream3 = loader.getResourceAsStream("META-INF/SELFSIGN.SF")) {
-                if (stream1 == null || stream2 == null || stream3 == null) {
-                    if(stream1 == null){
-                        this.reportMaker.signatureFileMissing("META-INF/MANIFEST.MF");
-                    }
-                    if(stream2 == null){
-                        this.reportMaker.signatureFileMissing("META-INF/SELFSIGN.DSA");
-                    }
-                    if(stream3 == null){
-                        this.reportMaker.signatureFileMissing("META-INF/SELFSIGN.SF");
-                    }
-                    plugin.getLogger().warning("The signature could not be found! The QuickShop jar has been modified or you're running a custom build.");
-                    return new ResultContainer(CheckResult.KILL_SERVER, "Security risk detected, QuickShop jar has been modified.");
-                }
-            }
             String jarPath = this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile();
             jarPath = URLDecoder.decode(jarPath, "UTF-8");
             Util.debugLog("JarPath selected: " + jarPath);

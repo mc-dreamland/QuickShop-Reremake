@@ -24,6 +24,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.EvictingQueue;
 import de.themoep.minedown.MineDown;
 import de.themoep.minedown.MineDownParser;
+import de.tr7zw.nbtapi.NBTCompound;
+import de.tr7zw.nbtapi.NBTItem;
 import io.papermc.lib.PaperLib;
 import lombok.Getter;
 import lombok.Setter;
@@ -86,21 +88,9 @@ import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Set;
-import java.util.StringJoiner;
-import java.util.TimeZone;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -111,6 +101,7 @@ import static org.maxgamer.quickshop.chat.platform.minedown.BungeeQuickChat.from
 import static org.maxgamer.quickshop.chat.platform.minedown.BungeeQuickChat.toLegacyText;
 
 public class Util {
+    private static List<String> blacklistNbt = new ArrayList<>();
     private static final EnumSet<Material> BLACKLIST = EnumSet.noneOf(Material.class);
     private static final EnumMap<Material, Entry<Double, Double>> RESTRICTED_PRICES = new EnumMap<>(Material.class);
     private static final EnumMap<Material, Integer> CUSTOM_STACKSIZE = new EnumMap<>(Material.class);
@@ -698,7 +689,9 @@ public class Util {
         SHOPABLES.clear();
         RESTRICTED_PRICES.clear();
         CUSTOM_STACKSIZE.clear();
+        blacklistNbt.clear();
         devMode = plugin.getConfig().getBoolean("dev-mode");
+        blacklistNbt = plugin.getConfig().getStringList("blacklist-nbt");
 
         for (String s : plugin.getConfig().getStringList("shop-blocks")) {
             Material mat = Material.matchMaterial(s.toUpperCase());
@@ -861,6 +854,44 @@ public class Util {
             for (String blacklistLore : blacklistLores) {
                 if (lore.contains(blacklistLore)) {
                     return true;
+                }
+            }
+        }
+        NBTItem nbtItem = new NBTItem(stack);
+
+        if (nbtItem.hasNBTData()) {
+            for (String s : blacklistNbt) {
+                String[] split = s.split("\\.");
+                NBTCompound compound = null;
+                int i = 0;
+                for (String tag : split) {
+                    if (split.length > 1) {
+                        if (compound == null) {
+                            if (nbtItem.hasTag(tag)) {
+                                compound = nbtItem.getCompound(tag);
+                                i++;
+                                if (i == split.length) {
+                                    return true;
+                                }
+                            } else {
+                                return false;
+                            }
+                        } else {
+                            if (compound.hasTag(tag)) {
+                                compound = compound.getCompound(tag);
+                                i++;
+                                if (i == split.length) {
+                                    return true;
+                                }
+                            } else {
+                                return false;
+                            }
+                        }
+                    } else {
+                        if (nbtItem.hasTag(tag)) {
+                            return true;
+                        }
+                    }
                 }
             }
         }

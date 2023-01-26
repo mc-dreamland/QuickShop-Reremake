@@ -317,6 +317,11 @@ public class SimpleCommandManager implements CommandManager, TabCompleter, Comma
                 .executor(new SubCommand_Item(plugin))
                 .build());
         registerCmd(CommandContainer.builder()
+                .prefix("open")
+                .permission(null)
+                .executor(new SubCommand_Open(plugin))
+                .build());
+        registerCmd(CommandContainer.builder()
                 .prefix("removeall")
                 .selectivePermission("quickshop.removeall.other")
                 .selectivePermission("quickshop.removeall.self")
