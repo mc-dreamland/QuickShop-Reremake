@@ -368,6 +368,19 @@ shop:
   # - DIAMOND;100;200
   price-restriction: [ ]
 
+  #Limit item price by nbt tag.
+  #This only support nbt key, not support the value.
+  #It means if the item has the same nbt key, it will be limited.
+  #It also support NBT compound
+  #nbtCompound: {TestNbtCompound:{SubKey1:"Test",SubKey2:{SubSubKey1:"Test2"}}}
+  #If you want to limit "SubSubKey1", You can use "TestNbtCompound.SubKey2.SubSubKey1"
+  #
+  #Format: <nbttag>;<minprice>;<maxprice>
+  #e.g:
+  #  - Test;100;200
+  #  - TestKey.SubKey1.SubSubKey1;100;200
+  nbt-price-restriction: [ ]
+
   #The maximum number of digits after the decimal. 
   #Set this to -1 to disable it. (Unlimited maximum digits)
   maximum-digits-in-price: -1

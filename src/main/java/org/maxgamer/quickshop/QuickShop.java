@@ -2234,6 +2234,10 @@ public class QuickShop extends JavaPlugin implements QuickShopAPI {
             getLogger().warning("You are not using QS Matcher, it may meeting item comparing issue mentioned there: https://hub.spigotmc.org/jira/browse/SPIGOT-5063");
         }
 
+        if (getConfig().get("nbt-price-restriction") == null) {
+            getConfig().set("shop.nbt-price-restriction", new ArrayList<>(0));
+        }
+
         try (InputStreamReader buildInConfigReader = new InputStreamReader(new BufferedInputStream(Objects.requireNonNull(getResource("config.yml"))), StandardCharsets.UTF_8)) {
             if (new ConfigurationFixer(this, new File(getDataFolder(), "config.yml"), getConfig(), YamlConfiguration.loadConfiguration(buildInConfigReader)).fix()) {
                 reloadConfiguration();

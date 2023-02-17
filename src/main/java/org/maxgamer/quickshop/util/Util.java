@@ -34,13 +34,7 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TranslatableComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import org.apache.commons.lang3.StringUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.DyeColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.Tag;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -74,13 +68,7 @@ import org.maxgamer.quickshop.database.MySQLCore;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -88,8 +76,8 @@ import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -104,6 +92,7 @@ public class Util {
     private static List<String> blacklistNbt = new ArrayList<>();
     private static final EnumSet<Material> BLACKLIST = EnumSet.noneOf(Material.class);
     private static final EnumMap<Material, Entry<Double, Double>> RESTRICTED_PRICES = new EnumMap<>(Material.class);
+    private static final HashMap<String, Entry<Double, Double>> NBT_RESTRICTED_PRICES = new HashMap<>();
     private static final EnumMap<Material, Integer> CUSTOM_STACKSIZE = new EnumMap<>(Material.class);
     private static final EnumSet<Material> SHOPABLES = EnumSet.noneOf(Material.class);
     private static final List<BlockFace> VERTICAL_FACING = Collections.unmodifiableList(Arrays.asList(BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST));
@@ -610,6 +599,71 @@ public class Util {
         return RESTRICTED_PRICES.get(material);
     }
 
+    /**
+     * Return an entry with min and max prices, but null if there isn't a price restriction
+     *
+     * @param itemStack itemStack
+     * @return min, max
+     */
+    @Nullable
+    public static Entry<Double, Double> getNBTPriceRestriction(@NotNull ItemStack itemStack) {
+        NBTItem nbtItem = new NBTItem(itemStack);
+
+        if (nbtItem.hasNBTData()) {
+
+            for (Entry<String, Entry<Double, Double>> entry : NBT_RESTRICTED_PRICES.entrySet()) {
+
+                if (hasNBTTag(nbtItem, entry.getKey())) {
+                    return entry.getValue();
+                }
+            }
+        }
+        return null;
+    }
+
+    public static boolean hasNBTTag(@NotNull NBTItem nbtItem, String nbtTag) {
+
+        String[] split = nbtTag.split("\\.");
+        NBTCompound compound = null;
+        int i = 0;
+        for (String tag : split) {
+            if (split.length > 1) {
+                if (compound == null) {
+                    if (nbtItem.hasTag(tag)) {
+                        compound = nbtItem.getCompound(tag);
+                        i++;
+                        if (i == split.length) {
+                            return true;
+                        }
+                    } else {
+                        return false;
+                    }
+                } else {
+                    if (compound.hasTag(tag)) {
+                        compound = compound.getCompound(tag);
+                        i++;
+                        if (i == split.length) {
+                            return true;
+                        }
+                    } else {
+                        return false;
+                    }
+                }
+            } else {
+                if (nbtItem.hasTag(tag)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean hasNBTTag(@NotNull ItemStack itemStack, String nbtTag) {
+
+        return hasNBTTag(new NBTItem(itemStack), nbtTag);
+    }
+
     public static boolean isDoubleChest(@Nullable BlockData blockData) {
         if (!(blockData instanceof org.bukkit.block.data.type.Chest)) {
             return false;
@@ -736,6 +790,14 @@ public class Util {
                 }
             }
         }
+
+        for (String s : plugin.getConfig().getStringList("shop.nbt-price-restriction")) {
+            String[] sp = s.split(";");
+            if (sp.length == 3) {
+                NBT_RESTRICTED_PRICES.put(sp[0], new SimpleEntry<>(Double.valueOf(sp[1]), Double.valueOf(sp[2])));
+            }
+        }
+
         for (String material : plugin.getConfig().getStringList("custom-item-stacksize")) {
             String[] data = material.split(":");
             if (data.length != 2) {
@@ -860,39 +922,8 @@ public class Util {
         NBTItem nbtItem = new NBTItem(stack);
 
         if (nbtItem.hasNBTData()) {
-            for (String s : blacklistNbt) {
-                String[] split = s.split("\\.");
-                NBTCompound compound = null;
-                int i = 0;
-                for (String tag : split) {
-                    if (split.length > 1) {
-                        if (compound == null) {
-                            if (nbtItem.hasTag(tag)) {
-                                compound = nbtItem.getCompound(tag);
-                                i++;
-                                if (i == split.length) {
-                                    return true;
-                                }
-                            } else {
-                                return false;
-                            }
-                        } else {
-                            if (compound.hasTag(tag)) {
-                                compound = compound.getCompound(tag);
-                                i++;
-                                if (i == split.length) {
-                                    return true;
-                                }
-                            } else {
-                                return false;
-                            }
-                        }
-                    } else {
-                        if (nbtItem.hasTag(tag)) {
-                            return true;
-                        }
-                    }
-                }
+            for (String nbtTag : blacklistNbt) {
+                return hasNBTTag(nbtItem, nbtTag);
             }
         }
         return false;
