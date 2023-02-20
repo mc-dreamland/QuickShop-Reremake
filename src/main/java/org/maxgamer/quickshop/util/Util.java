@@ -59,6 +59,7 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.geysermc.floodgate.api.FloodgateApi;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.maxgamer.quickshop.QuickShop;
@@ -745,7 +746,7 @@ public class Util {
         CUSTOM_STACKSIZE.clear();
         blacklistNbt.clear();
         devMode = plugin.getConfig().getBoolean("dev-mode");
-        blacklistNbt = plugin.getConfig().getStringList("blacklist-nbt");
+        blacklistNbt = plugin.getConfig().getStringList("shop.blacklist-nbt");
 
         for (String s : plugin.getConfig().getStringList("shop-blocks")) {
             Material mat = Material.matchMaterial(s.toUpperCase());
@@ -1608,5 +1609,12 @@ public class Util {
             loc.setZ(loc.getBlockZ());
             return loc;
         }
+
+    public static boolean isPocketPlayer(Player player) {
+        if (QuickShop.getInstance().isPocketEnable()) {
+            return FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId());
+        }
+        return false;
+    }
 
     }

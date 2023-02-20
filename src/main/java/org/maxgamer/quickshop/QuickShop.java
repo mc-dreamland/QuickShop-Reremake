@@ -170,6 +170,9 @@ public class QuickShop extends JavaPlugin implements QuickShopAPI {
      */
     private static PermissionManager permissionManager;
     private static boolean loaded = false;
+
+    @Getter
+    private boolean pocketEnable;
     /**
      * If running environment test
      */
@@ -401,6 +404,9 @@ public class QuickShop extends JavaPlugin implements QuickShopAPI {
     private void load3rdParty() {
         // added for compatibility reasons with OpenInv - see
         // https://github.com/KaiKikuchi/QuickShop/issues/139
+
+        this.pocketEnable = Bukkit.getPluginManager().getPlugin("FloodGate") != null;
+
         if (getConfig().getBoolean("plugin.OpenInv")) {
             this.openInvPlugin = Bukkit.getPluginManager().getPlugin("OpenInv");
             if (this.openInvPlugin != null && openInvPlugin.isEnabled()) {
@@ -2236,6 +2242,10 @@ public class QuickShop extends JavaPlugin implements QuickShopAPI {
 
         if (getConfig().get("nbt-price-restriction") == null) {
             getConfig().set("shop.nbt-price-restriction", new ArrayList<>(0));
+        }
+
+        if (getConfig().get("shop.blacklist-nbt") == null) {
+            getConfig().set("shop.blacklist-nbt", new ArrayList<>(0));
         }
 
         try (InputStreamReader buildInConfigReader = new InputStreamReader(new BufferedInputStream(Objects.requireNonNull(getResource("config.yml"))), StandardCharsets.UTF_8)) {

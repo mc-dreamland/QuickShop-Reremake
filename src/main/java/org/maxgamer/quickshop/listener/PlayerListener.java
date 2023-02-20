@@ -51,6 +51,7 @@ import org.maxgamer.quickshop.api.economy.AbstractEconomy;
 import org.maxgamer.quickshop.api.shop.Info;
 import org.maxgamer.quickshop.api.shop.Shop;
 import org.maxgamer.quickshop.api.shop.ShopAction;
+import org.maxgamer.quickshop.gui.ShopBuyGuiPocket;
 import org.maxgamer.quickshop.shop.SimpleInfo;
 import org.maxgamer.quickshop.util.InteractUtil;
 import org.maxgamer.quickshop.util.MsgUtil;
@@ -215,6 +216,18 @@ public class PlayerListener extends AbstractQSListener {
             e.setUseItemInHand(Event.Result.DENY);
             shop.onClick();
             this.playClickSound(e.getPlayer());
+
+
+            if (Util.isPocketPlayer(p)) {
+                ShopBuyGuiPocket.open(p,shop);
+                shop.setSignText();
+                // Add the new action
+                Map<UUID, Info> actions = plugin.getShopManager().getActions();
+                Info info = new SimpleInfo(shop.getLocation(), ShopAction.BUY, null, null, shop, false);
+                actions.put(p.getUniqueId(), info);
+                return;
+            }
+
             // Text menu
             plugin.getShopManager().sendShopInfo(p, shop);
             shop.setSignText();

@@ -25,6 +25,8 @@ import org.jetbrains.annotations.NotNull;
 import org.maxgamer.quickshop.QuickShop;
 import org.maxgamer.quickshop.api.command.CommandHandler;
 import org.maxgamer.quickshop.gui.ShopListGui;
+import org.maxgamer.quickshop.gui.ShopListGuiPocket;
+import org.maxgamer.quickshop.util.Util;
 
 @AllArgsConstructor
 public class SubCommand_Open implements CommandHandler<Player> {
@@ -34,8 +36,11 @@ public class SubCommand_Open implements CommandHandler<Player> {
     @Override
     public void onCommand(@NotNull Player player
             , @NotNull String commandLabel, @NotNull String[] cmdArg) {
-        // TODO 处理间歇泉玩家
-        ShopListGui.open(player, 0);
+        if (Util.isPocketPlayer(player)) {
+            ShopListGuiPocket.open(player);
+        } else {
+            ShopListGui.open(player, 0);
+        }
     }
 
 }

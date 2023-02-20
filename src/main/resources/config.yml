@@ -417,6 +417,13 @@ shop:
   blacklist-lores:
     - "SoulBound"
 
+  #The list of nbt that are blocked from being sold.
+  #This will not affect existing shops!
+  blacklist-nbt:
+    # - '<key>'
+    # - '<compound>' support compound like: key.key1.key2
+    - 'custom.test'
+
   #Protection check
   #This will send a FAKE BlockBreakEvent to check if you can break a block.
   #This may conflict with some protection plugins!
@@ -859,12 +866,3 @@ custom-commands:
 #Let this stay false, DO NOT TOUCH IT!
 config-damaged: false
 
-
-
-
-#The list of nbt that are blocked from being sold.
-#This will not affect existing shops!
-blacklist-nbt:
-  # - '<key>'
-  # - '<compound>' support compound like: key.key1.key2
-  - 'custom.test'
