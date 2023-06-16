@@ -34,7 +34,13 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TranslatableComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import org.apache.commons.lang3.StringUtils;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.DyeColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.Tag;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -69,7 +75,13 @@ import org.maxgamer.quickshop.database.MySQLCore;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -77,8 +89,8 @@ import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -532,7 +544,9 @@ public class Util {
                 } else if (potionMeta.hasCustomEffects()) {
                     PotionEffect potionEffect = potionMeta.getCustomEffects().get(0);
                     if (potionEffect != null) {
-                        int level = potionEffect.getAmplifier();
+                        // https://hub.spigotmc.org/jira/browse/SPIGOT-1697
+                        // Internal api notes: amplifier starts from zero, so plus one to get the correct result
+                        int level = potionEffect.getAmplifier() + 1;
                         return MsgUtil.getPotioni18n(potionEffect.getType()) + " " + (level <= 10 ? RomanNumber.toRoman(potionEffect.getAmplifier()) : level);
                     }
                 }
@@ -545,6 +559,9 @@ public class Util {
             if (displayName == null || displayName.isEmpty()) {
                 return null;
             } else {
+                //Some item name using escape character, causing rgb color could not decode correctly
+                //So fix it there
+                displayName = displayName.replace("&&x", "&x").replace("§§x", "§x");
                 return displayName;
             }
         }
@@ -555,6 +572,34 @@ public class Util {
     public static String getItemStackName(@NotNull ItemStack itemStack) {
         String result = getItemCustomName(itemStack);
         return result == null ? MsgUtil.getItemi18n(itemStack.getType().name()) : result;
+    }
+
+    /**
+     * Check all enchantments on a book and return true if they contain the
+     * nameToMatch
+     *
+     * @param itemStack   The enchanted book itemstack
+     * @param nameToMatch The name of the enchant to check the book for
+     * @return The names of enchants contained on the enchanted book
+     */
+    @NotNull
+    public static boolean isBookEnchantmentsMatched(@NotNull ItemStack itemStack, @NotNull String nameToMatch) {
+        if (itemStack.getType() == Material.ENCHANTED_BOOK) {
+            ItemMeta itemMeta = itemStack.getItemMeta();
+            if (!(itemMeta instanceof EnchantmentStorageMeta))
+                return false;
+            EnchantmentStorageMeta enchantmentStorageMeta = (EnchantmentStorageMeta) itemStack.getItemMeta();
+            if (enchantmentStorageMeta.hasStoredEnchants()) {
+                for (Enchantment enchantment : enchantmentStorageMeta.getStoredEnchants().keySet()) {
+                    nameToMatch = nameToMatch.toUpperCase(Locale.ROOT);
+                    if (enchantment.getKey().getKey().toUpperCase(Locale.ROOT).contains(nameToMatch)
+                            || MsgUtil.getEnchi18n(enchantment).toUpperCase(Locale.ROOT).contains(nameToMatch)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     @NotNull
@@ -1226,9 +1271,10 @@ public class Util {
         }
         MineDownParser parser = MINEDOWN.get().parser();
         parser.reset();
+
         //A hack for saving reset character
         text = text.replace("&r", "&l&r").replace("§r", "§l§r");
-        return toLegacyText(parser.enable(MineDownParser.Option.LEGACY_COLORS).backwardsCompatibility(true).parse(text).create());
+        return toLegacyText(parser.enable(MineDownParser.Option.LEGACY_COLORS).enable(MineDownParser.Option.APPEND_COLORS_TO_EMPTY_STRING).backwardsCompatibility(true).parse(text).create());
     }
 
     /**

@@ -50,7 +50,6 @@ import org.jetbrains.annotations.Nullable;
 import org.maxgamer.quickshop.QuickShop;
 import org.maxgamer.quickshop.api.chat.ComponentPackage;
 import org.maxgamer.quickshop.api.economy.EconomyCore;
-import org.maxgamer.quickshop.api.event.ShopClickEvent;
 import org.maxgamer.quickshop.api.event.ShopDeleteEvent;
 import org.maxgamer.quickshop.api.event.ShopInventoryCalculateEvent;
 import org.maxgamer.quickshop.api.event.ShopInventoryEvent;
@@ -578,11 +577,6 @@ public class ContainerShop implements Shop {
     @Override
     public void onClick() {
         Util.ensureThread(false);
-        ShopClickEvent event = new ShopClickEvent(this);
-        if (Util.fireCancellableEvent(event)) {
-            Util.debugLog("Ignore shop click, because some plugin cancel it.");
-            return;
-        }
         refresh();
         setSignText();
     }
@@ -1032,27 +1026,9 @@ public class ContainerShop implements Shop {
 
         // check price restriction
         PriceLimiterCheckResult priceRestriction = plugin.getShopManager().getPriceLimiter().check(item, price);
-        boolean markUpdate = false;
         if (priceRestriction.getStatus() != PriceLimiterStatus.PASS) {
-            if (priceRestriction.getStatus() == PriceLimiterStatus.NOT_A_WHOLE_NUMBER) {
-                setDirty();
-                price = Math.floor(price);
-                markUpdate = true;
-            } else if (priceRestriction.getStatus() == PriceLimiterStatus.NOT_VALID) {
-                setDirty();
-                price = priceRestriction.getMin();
-                markUpdate = true;
-            }
-            if (price < priceRestriction.getMin()) {
-                setDirty();
-                price = priceRestriction.getMin();
-                markUpdate = true;
-            } else if (price > priceRestriction.getMax()) {
-                setDirty();
-                price = priceRestriction.getMax();
-                markUpdate = true;
-            }
-            if (markUpdate) {
+            if (price != priceRestriction.getPriceShouldBe()) {
+                price = priceRestriction.getPriceShouldBe();
                 update();
             }
         }
