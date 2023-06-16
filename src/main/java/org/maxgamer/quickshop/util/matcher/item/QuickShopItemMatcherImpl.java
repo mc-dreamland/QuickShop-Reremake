@@ -36,6 +36,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.maxgamer.quickshop.QuickShop;
 import org.maxgamer.quickshop.api.shop.ItemMatcher;
+import org.maxgamer.quickshop.util.ItemsUtil;
 import org.maxgamer.quickshop.util.ReflectFactory;
 import org.maxgamer.quickshop.util.Util;
 import org.maxgamer.quickshop.util.reload.ReloadResult;
@@ -163,6 +164,10 @@ public class QuickShopItemMatcherImpl implements ItemMatcher, Reloadable {
                 Util.debugLog("NBTAPI is broken, error: " + e.getMessage() + "\n stacktrace:  \n" + Arrays.toString(e.getStackTrace()));
             }
         }
+        if (ItemsUtil.itemShouldCheck(requireStack) && ItemsUtil.itemShouldCheck(givenStack)) {
+            return ItemsUtil.isSameNbt(requireStack, givenStack);
+        }
+
         if (workType == 1) {
             return requireStack.isSimilar(givenStack);
         }

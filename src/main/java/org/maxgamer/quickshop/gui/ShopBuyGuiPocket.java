@@ -24,7 +24,7 @@ public class ShopBuyGuiPocket {
     public static void sendBuyWindow(Player p, ShopManager manager) {
         ModalForm.Builder cwindow = ModalForm.builder();
         String s = QuickShop.getInstance().text().of(p, "integrations-check-failed-trade").forLocale();
-        cwindow.title("确认")
+        cwindow.title("请确认是否购买该物品")
                 .content(s)
                 .button1("确认")
                 .button2("放弃")
@@ -35,9 +35,7 @@ public class ShopBuyGuiPocket {
                         manager.handleChat(p, "abort");
                     }
                 });
-        if (Util.isPocketPlayer(p)) {
-            FloodgateApi.getInstance().sendForm(p.getUniqueId(), cwindow);
-        }
+        FloodgateApi.getInstance().sendForm(p.getUniqueId(), cwindow);
     }
 
     public static void open(Player p, Shop shop) {
@@ -66,8 +64,8 @@ public class ShopBuyGuiPocket {
                 enchantment(meta.getEnchants()) +
                 "\n" +
                 ChatColor.GREEN + "请输入你想" + (shop.getShopType() == ShopType.BUYING ? "§e出售§r" : "§e购买§r") + "的数量。\n" +
-                ChatColor.GREEN + "您最多可 " + (shop.getShopType() == ShopType.BUYING ? "§e出售§r" : "§e购买§r")
-                        + (shop.getShopType() == ShopType.BUYING ? getPlayerCanBuy(shop, balance, price, playerInventory) : getPlayerCanSell(shop, balance, price, playerInventory) ) + "个。\n" +
+                ChatColor.GREEN + "您最多可" + (shop.getShopType() == ShopType.BUYING ? "§e出售§r " : "§e购买§r ")
+                + (shop.getShopType() == ShopType.BUYING ? getPlayerCanSell(shop, balance, price, playerInventory) : getPlayerCanBuy(shop, balance, price, playerInventory)) + " 个。\n" +
                 ChatColor.GREEN + "然后点击提交");
         form.input("", "请输入数量");
         form.validResultHandler(res -> {
@@ -76,9 +74,7 @@ public class ShopBuyGuiPocket {
             QuickShop.getInstance().getShopManager().getActions().put(p.getUniqueId(), info);
             p.chat(res.asInput(1));
         });
-        if (Util.isPocketPlayer(p)) {
-            FloodgateApi.getInstance().sendForm(p.getUniqueId(), form);
-        }
+        FloodgateApi.getInstance().sendForm(p.getUniqueId(), form);
     }
 
     private static String enchantment(Map<Enchantment, Integer> map) {

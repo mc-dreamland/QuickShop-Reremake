@@ -20,6 +20,7 @@
 package org.maxgamer.quickshop.shop;
 
 import com.lishid.openinv.IOpenInv;
+import de.tr7zw.nbtapi.NBTItem;
 import de.tr7zw.nbtapi.NBTTileEntity;
 import io.papermc.lib.PaperLib;
 import lombok.EqualsAndHashCode;
@@ -72,6 +73,7 @@ import org.maxgamer.quickshop.api.shop.ShopModerator;
 import org.maxgamer.quickshop.api.shop.ShopType;
 import org.maxgamer.quickshop.chat.platform.minedown.BungeeQuickChat;
 import org.maxgamer.quickshop.economy.Trader;
+import org.maxgamer.quickshop.util.ItemsUtil;
 import org.maxgamer.quickshop.util.MsgUtil;
 import org.maxgamer.quickshop.util.PlayerFinder;
 import org.maxgamer.quickshop.util.Util;
@@ -380,7 +382,7 @@ public class ContainerShop implements Shop {
             Inventory chestInv = this.getInventory();
             for (int i = 0; amount > 0 && i < contents.length; i++) {
                 ItemStack item = contents[i];
-                if (item != null && this.matches(item)) {
+                if (item != null && this.matches(item) && ItemsUtil.isItemOwner(buyer, item)) {
                     // Copy it, we don't want to interfere
                     item = item.clone();
                     // Amount = total, item.getAmount() = how many items in the
@@ -694,7 +696,7 @@ public class ContainerShop implements Shop {
         ArrayList<ItemStack> floor = new ArrayList<>(5);
         int itemMaxStackSize = Util.getItemMaxStackSize(this.item.getType());
         if (this.isUnlimited() && !isAlwaysCountingContainer()) {
-            ItemStack item = this.item.clone();
+            ItemStack item = ItemsUtil.changeItemOwner(seller, this.item.clone());
             while (amount > 0) {
                 int stackSize = Math.min(amount, itemMaxStackSize);
                 item.setAmount(stackSize);
@@ -708,7 +710,7 @@ public class ContainerShop implements Shop {
                 ItemStack item = chestContents[i];
                 if (item != null && item.getType() != Material.AIR && this.matches(item)) {
                     // Copy it, we don't want to interfere
-                    item = item.clone();
+                    item = ItemsUtil.changeItemOwner(seller, item.clone());
                     // Amount = total, item.getAmount() = how many items in the
                     // stack
                     int stackSize = Math.min(amount, item.getAmount());
@@ -733,6 +735,7 @@ public class ContainerShop implements Shop {
         }
         if (loc2Drop != null) {
             for (ItemStack stack : floor) {
+                stack = ItemsUtil.changeItemOwner(seller, stack);
                 loc2Drop.getWorld().dropItem(loc2Drop, stack);
             }
         }

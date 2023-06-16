@@ -21,12 +21,8 @@ public class ShopListGuiPocket {
         form.content(String.format("你有 %d 个商店", playerShops.size()));
         List<Runnable> runs = new ArrayList<>();
         for (Shop playerShop : playerShops) {
-            if (playerShop.getItem().hasItemMeta()) {
-                if (playerShop.getItem().getItemMeta().hasDisplayName()) {
-                    form.button(playerShop.getItem().getItemMeta().getDisplayName() + "§r\n 点击管理商店");
-                }else {
-                    form.button(MsgUtil.getItemi18n(playerShop.getItem().getType().name()) + "§r\n 点击管理商店");
-                }
+            if (playerShop.getItem().hasItemMeta() && playerShop.getItem().getItemMeta().hasDisplayName()) {
+                form.button(playerShop.getItem().getItemMeta().getDisplayName() + "§r\n 点击管理商店");
             } else {
                 form.button(MsgUtil.getItemi18n(playerShop.getItem().getType().name()) + "§r\n 点击管理商店");
             }

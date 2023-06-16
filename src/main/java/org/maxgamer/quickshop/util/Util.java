@@ -58,6 +58,7 @@ import org.bukkit.event.Event;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -278,6 +279,12 @@ public class Util {
         for (final ItemStack iStack : inv.getStorageContents()) {
             if (iStack == null || iStack.getType() == Material.AIR) {
                 continue;
+            }
+            if (inv instanceof PlayerInventory) {
+                PlayerInventory pInv = (PlayerInventory) inv;
+                if (!ItemsUtil.isItemOwner(pInv.getHolder().getUniqueId(), iStack)) {
+                    continue;
+                }
             }
             if (shop.matches(iStack)) {
                 items += iStack.getAmount();

@@ -120,10 +120,16 @@ public class SimplePriceLimiter implements PriceLimiter {
         }
         Map.Entry<Double, Double> nbtPriceRestriction = Util.getNBTPriceRestriction(stack);
         if (nbtPriceRestriction != null) {
-            if (perItemPrice < nbtPriceRestriction.getKey() || perItemPrice > nbtPriceRestriction.getValue()) {
-                return new SimplePriceLimiterCheckResult(PriceLimiterStatus.PRICE_RESTRICTED, nbtPriceRestriction.getKey(), nbtPriceRestriction.getValue());
+            result.max(nbtPriceRestriction.getKey()).min(nbtPriceRestriction.getValue());
+            if (!allowFreeShop || price != 0) {
+                if (perItemPrice < nbtPriceRestriction.getKey()) {
+                    return result.status(PriceLimiterStatus.PRICE_RESTRICTED)
+                            .priceShouldBe(nbtPriceRestriction.getKey());
+                } else if (perItemPrice > nbtPriceRestriction.getValue()) {
+                    return result.status(PriceLimiterStatus.PRICE_RESTRICTED)
+                            .priceShouldBe(nbtPriceRestriction.getValue());
+                }
             }
-            return new SimplePriceLimiterCheckResult(PriceLimiterStatus.PASS, nbtPriceRestriction.getKey(), nbtPriceRestriction.getValue());
         }
         Map.Entry<Double, Double> materialLimit = Util.getPriceRestriction(stack.getType());
         if (materialLimit != null) {

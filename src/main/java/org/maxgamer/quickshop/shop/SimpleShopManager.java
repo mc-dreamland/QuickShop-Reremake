@@ -45,6 +45,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
@@ -72,12 +73,7 @@ import org.maxgamer.quickshop.api.shop.ShopType;
 import org.maxgamer.quickshop.economy.Trader;
 import org.maxgamer.quickshop.integration.SimpleIntegrationManager;
 import org.maxgamer.quickshop.localization.LocalizedMessagePair;
-import org.maxgamer.quickshop.util.CalculateUtil;
-import org.maxgamer.quickshop.util.ChatSheetPrinter;
-import org.maxgamer.quickshop.util.MsgUtil;
-import org.maxgamer.quickshop.util.PlayerFinder;
-import org.maxgamer.quickshop.util.RomanNumber;
-import org.maxgamer.quickshop.util.Util;
+import org.maxgamer.quickshop.util.*;
 import org.maxgamer.quickshop.util.economyformatter.EconomyFormatter;
 import org.maxgamer.quickshop.util.holder.Result;
 import org.maxgamer.quickshop.util.reload.ReloadResult;
@@ -915,6 +911,11 @@ public class SimpleShopManager implements ShopManager, Reloadable {
             if (!QuickShop.getPermissionManager().hasPermission(p, "quickshop.create.enderchest")) {
                 return;
             }
+        }
+
+        if (!ItemsUtil.isItemOwner(p.getUniqueId(), info.getItem())) {
+            p.sendMessage("§c你不是该物品的拥有者。");
+            return;
         }
 
         if (autoSign) {

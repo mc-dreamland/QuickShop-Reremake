@@ -28,6 +28,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.maxgamer.quickshop.QuickShop;
 import org.maxgamer.quickshop.api.shop.ItemMatcher;
+import org.maxgamer.quickshop.util.ItemsUtil;
 import org.maxgamer.quickshop.util.Util;
 
 import java.util.Arrays;
@@ -101,6 +102,11 @@ public class BukkitItemMatcherImpl implements ItemMatcher {
                 Util.debugLog("NBTAPI is broken, error: " + e.getMessage() + "\n stacktrace:  \n" + Arrays.toString(e.getStackTrace()));
             }
         }
+
+        if (ItemsUtil.itemShouldCheck(original) && ItemsUtil.itemShouldCheck(tester)) {
+            return ItemsUtil.isSameNbt(original, tester);
+        }
+
         return tester.isSimilar(original);
     }
 }
